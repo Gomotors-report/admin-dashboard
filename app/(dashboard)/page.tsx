@@ -1,6 +1,6 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -8,6 +8,20 @@ import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { Progress } from '@/components/ui/progress';
+
+const ratingLabels = {
+  1: 'Muy Insatisfecho',
+  2: 'Insatisfecho',
+  3: 'Algo Insatisfecho',
+  4: 'Neutral',
+  5: 'Algo Satisfecho',
+  6: 'Satisfecho',
+  7: 'Muy Satisfecho',
+  8: 'Excelente',
+  9: 'Sobresaliente',
+  10: 'Excepcional'
+};
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -43,7 +57,6 @@ export default function DashboardPage() {
       if (data.success) {
         toast.success('Evaluación guardada exitosamente');
         router.refresh();
-        // Opcional: resetear el formulario o redirigir
       } else {
         throw new Error(data.error || 'Error al guardar la evaluación');
       }
@@ -59,217 +72,236 @@ export default function DashboardPage() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const renderRatingGroup = (
+    field: string,
+    value: string,
+    question: string,
+    description?: string
+  ) => (
+    <div className="space-y-4 p-6 bg-gray-50 rounded-lg">
+      <div className="space-y-2">
+        <Label className="text-lg font-medium">{question}</Label>
+        {description && (
+          <CardDescription>{description}</CardDescription>
+        )}
+      </div>
+      <div className="space-y-4">
+        <RadioGroup 
+          value={value} 
+          onValueChange={(val) => handleChange(field, val)}
+          className="flex flex-wrap gap-3"
+        >
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+            <div
+              key={num}
+              className={`relative flex-1 min-w-[80px] cursor-pointer`}
+            >
+              <RadioGroupItem
+                value={num.toString()}
+                id={`${field}-${num}`}
+                className="peer sr-only"
+              />
+              <Label
+                htmlFor={`${field}-${num}`}
+                className="flex flex-col items-center justify-center p-3 text-gray-500 border rounded-lg cursor-pointer hover:bg-gray-50 peer-checked:border-primary peer-checked:text-primary peer-checked:bg-primary/5 transition-all"
+              >
+                <span className="text-2xl font-bold">{num}</span>
+                <span className="text-xs text-center mt-1">{ratingLabels[num as keyof typeof ratingLabels]}</span>
+              </Label>
+            </div>
+          ))}
+        </RadioGroup>
+        <Progress value={parseInt(value) * 10} className="h-2" />
+      </div>
+    </div>
+  );
+
   return (
-    <div className="flex flex-col gap-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Formulario de Evaluación de Servicio del Concesionario</CardTitle>
+    <div className="container mx-auto py-6 max-w-5xl">
+      <Card className="shadow-lg">
+        <CardHeader className="space-y-2 p-6 bg-primary text-primary-foreground">
+          <CardTitle className="text-2xl">Formulario de Evaluación de Servicio</CardTitle>
+          <CardDescription className="text-primary-foreground/90">
+            Su opinión nos ayuda a mejorar nuestro servicio. Por favor, califique su experiencia.
+          </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-8">
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">HGSI (92)</h3>
-              
-              {/* Reserva e Impresión del Concesionario */}
-              <div className="space-y-2">
-                <Label>Teniendo en cuenta la última visita, ¿cómo calificaría la reserva e impresión sobre el concesionario?</Label>
-                <RadioGroup 
-                  value={formData.impressionRating} 
-                  onValueChange={(value) => handleChange('impressionRating', value)}
-                  className="flex flex-wrap gap-4"
-                >
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
-                    <div key={value} className="flex items-center space-x-2">
-                      <RadioGroupItem value={value.toString()} id={`impression-${value}`} />
-                      <Label htmlFor={`impression-${value}`}>{value}</Label>
-                    </div>
-                  ))}
-                </RadioGroup>
+        <CardContent className="p-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-6">
+              {/* Calidad del Servicio */}
+              <div className="space-y-6">
+                <h3 className="text-xl font-semibold text-gray-900">Calidad del Servicio</h3>
+                {renderRatingGroup(
+                  'qualityRating',
+                  formData.qualityRating,
+                  '¿Cómo calificaría la calidad del trabajo realizado?',
+                  'Evalúe la calidad general del servicio prestado'
+                )}
+                {renderRatingGroup(
+                  'valueRating',
+                  formData.valueRating,
+                  '¿Cómo calificaría el valor del servicio recibido?',
+                  'Considere la relación calidad-precio del servicio'
+                )}
               </div>
 
-              {/* Puntualidad del Servicio */}
-              <div className="space-y-2">
-                <Label>¿Cómo calificaría la puntualidad del concesionario?</Label>
-                <RadioGroup 
-                  value={formData.punctualityRating}
-                  onValueChange={(value) => handleChange('punctualityRating', value)}
-                  className="flex flex-wrap gap-4"
-                >
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
-                    <div key={value} className="flex items-center space-x-2">
-                      <RadioGroupItem value={value.toString()} id={`punctuality-${value}`} />
-                      <Label htmlFor={`punctuality-${value}`}>{value}</Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              </div>
-
-              {/* Personal de Servicio y Comunicación */}
-              <div className="space-y-2">
-                <Label>¿Cómo calificaría al personal del concesionario?</Label>
-                <RadioGroup 
-                  value={formData.staffRating}
-                  onValueChange={(value) => handleChange('staffRating', value)}
-                  className="flex flex-wrap gap-4"
-                >
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
-                    <div key={value} className="flex items-center space-x-2">
-                      <RadioGroupItem value={value.toString()} id={`staff-${value}`} />
-                      <Label htmlFor={`staff-${value}`}>{value}</Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              </div>
-
-              {/* Calidad de Servicio */}
-              <div className="space-y-2">
-                <Label>¿Cómo calificaría la calidad del trabajo realizado?</Label>
-                <RadioGroup 
-                  value={formData.qualityRating}
-                  onValueChange={(value) => handleChange('qualityRating', value)}
-                  className="flex flex-wrap gap-4"
-                >
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
-                    <div key={value} className="flex items-center space-x-2">
-                      <RadioGroupItem value={value.toString()} id={`quality-${value}`} />
-                      <Label htmlFor={`quality-${value}`}>{value}</Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              </div>
-
-              {/* Valor del Servicio Recibido */}
-              <div className="space-y-2">
-                <Label>¿Cómo calificaría el valor del servicio recibido?</Label>
-                <RadioGroup 
-                  value={formData.valueRating}
-                  onValueChange={(value) => handleChange('valueRating', value)}
-                  className="flex flex-wrap gap-4"
-                >
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
-                    <div key={value} className="flex items-center space-x-2">
-                      <RadioGroupItem value={value.toString()} id={`value-${value}`} />
-                      <Label htmlFor={`value-${value}`}>{value}</Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              </div>
-
-              {/* NPS */}
-              <div className="space-y-2">
-                <Label>¿Qué probabilidades existen de que recomiende el concesionario a amigos, parientes o colegas?</Label>
-                <RadioGroup 
-                  value={formData.npsRating}
-                  onValueChange={(value) => handleChange('npsRating', value)}
-                  className="flex flex-wrap gap-4"
-                >
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
-                    <div key={value} className="flex items-center space-x-2">
-                      <RadioGroupItem value={value.toString()} id={`nps-${value}`} />
-                      <Label htmlFor={`nps-${value}`}>{value}</Label>
-                    </div>
-                  ))}
-                </RadioGroup>
+              {/* Experiencia del Cliente */}
+              <div className="space-y-6">
+                <h3 className="text-xl font-semibold text-gray-900">Experiencia del Cliente</h3>
+                {renderRatingGroup(
+                  'impressionRating',
+                  formData.impressionRating,
+                  '¿Cómo calificaría la reserva e impresión sobre el concesionario?',
+                  'Su primera impresión y experiencia general'
+                )}
+                {renderRatingGroup(
+                  'punctualityRating',
+                  formData.punctualityRating,
+                  '¿Cómo calificaría la puntualidad del concesionario?',
+                  'Evalúe el cumplimiento de los tiempos acordados'
+                )}
+                {renderRatingGroup(
+                  'staffRating',
+                  formData.staffRating,
+                  '¿Cómo calificaría al personal del concesionario?',
+                  'Evalúe la atención y profesionalismo del personal'
+                )}
+                {renderRatingGroup(
+                  'npsRating',
+                  formData.npsRating,
+                  '¿Qué probabilidades existen de que recomiende el concesionario?',
+                  'Indique su disposición a recomendar nuestros servicios'
+                )}
               </div>
 
               {/* Preguntas Adicionales */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Preguntas Adicionales</h3>
-                <p className="text-sm text-muted-foreground">Pensando en la última visita:</p>
-
+              <div className="space-y-6">
+                <h3 className="text-xl font-semibold text-gray-900">Información Adicional</h3>
+                
                 {/* Inspección del automóvil */}
-                <div className="space-y-2">
-                  <Label>¿El concesionario se ofreció a inspeccionar el automóvil con usted antes de que comenzara el trabajo?</Label>
+                <div className="space-y-4 p-6 bg-gray-50 rounded-lg">
+                  <Label className="text-lg font-medium">
+                    ¿El concesionario se ofreció a inspeccionar el automóvil antes del trabajo?
+                  </Label>
                   <RadioGroup 
                     value={formData.offeredInspection}
                     onValueChange={(value) => handleChange('offeredInspection', value)}
                     className="flex gap-4"
                   >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="yes" id="inspection-yes" />
-                      <Label htmlFor="inspection-yes">Sí</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="no" id="inspection-no" />
-                      <Label htmlFor="inspection-no">No</Label>
-                    </div>
+                    {[
+                      { value: 'yes', label: 'Sí' },
+                      { value: 'no', label: 'No' }
+                    ].map(option => (
+                      <div key={option.value} className="flex-1">
+                        <RadioGroupItem
+                          value={option.value}
+                          id={`inspection-${option.value}`}
+                          className="peer sr-only"
+                        />
+                        <Label
+                          htmlFor={`inspection-${option.value}`}
+                          className="flex items-center justify-center p-4 text-gray-500 border rounded-lg cursor-pointer hover:bg-gray-50 peer-checked:border-primary peer-checked:text-primary peer-checked:bg-primary/5"
+                        >
+                          {option.label}
+                        </Label>
+                      </div>
+                    ))}
                   </RadioGroup>
                 </div>
 
                 {/* Contacto post-servicio */}
-                <div className="space-y-2">
-                  <Label>¿El concesionario se puso en contacto con usted para ver si el trabajo se llevó a cabo a su satisfacción?</Label>
+                <div className="space-y-4 p-6 bg-gray-50 rounded-lg">
+                  <Label className="text-lg font-medium">
+                    ¿El concesionario se puso en contacto después del servicio?
+                  </Label>
                   <RadioGroup 
                     value={formData.postServiceContact}
                     onValueChange={(value) => handleChange('postServiceContact', value)}
                     className="flex gap-4"
                   >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="yes" id="contact-yes" />
-                      <Label htmlFor="contact-yes">Sí</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="no" id="contact-no" />
-                      <Label htmlFor="contact-no">No</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="didnt-want" id="contact-didnt-want" />
-                      <Label htmlFor="contact-didnt-want">No lo deseaba</Label>
-                    </div>
+                    {[
+                      { value: 'yes', label: 'Sí' },
+                      { value: 'no', label: 'No' },
+                      { value: 'didnt-want', label: 'No lo deseaba' }
+                    ].map(option => (
+                      <div key={option.value} className="flex-1">
+                        <RadioGroupItem
+                          value={option.value}
+                          id={`contact-${option.value}`}
+                          className="peer sr-only"
+                        />
+                        <Label
+                          htmlFor={`contact-${option.value}`}
+                          className="flex items-center justify-center p-4 text-gray-500 border rounded-lg cursor-pointer hover:bg-gray-50 peer-checked:border-primary peer-checked:text-primary peer-checked:bg-primary/5"
+                        >
+                          {option.label}
+                        </Label>
+                      </div>
+                    ))}
                   </RadioGroup>
                 </div>
 
                 {/* Razón de la visita */}
-                <div className="space-y-2">
-                  <Label>¿Cuál fue el motivo de esta última visita al concesionario?</Label>
+                <div className="space-y-4 p-6 bg-gray-50 rounded-lg">
+                  <Label className="text-lg font-medium">
+                    ¿Cuál fue el motivo de esta visita al concesionario?
+                  </Label>
                   <RadioGroup 
                     value={formData.visitReason}
                     onValueChange={(value) => handleChange('visitReason', value)}
-                    className="flex flex-col gap-2"
+                    className="grid gap-4 md:grid-cols-2"
                   >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="routine" id="reason-routine" />
-                      <Label htmlFor="reason-routine">Servicio de rutina pagado o prepagado</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="free" id="reason-free" />
-                      <Label htmlFor="reason-free">Servicio gratuito</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="warranty" id="reason-warranty" />
-                      <Label htmlFor="reason-warranty">Reparación de garantía o mal funcionamiento</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="recall" id="reason-recall" />
-                      <Label htmlFor="reason-recall">Recall</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="other" id="reason-other" />
-                      <Label htmlFor="reason-other">Otros</Label>
-                    </div>
+                    {[
+                      { value: 'routine', label: 'Servicio de rutina pagado o prepagado' },
+                      { value: 'free', label: 'Servicio gratuito' },
+                      { value: 'warranty', label: 'Reparación de garantía o mal funcionamiento' },
+                      { value: 'recall', label: 'Recall' },
+                      { value: 'other', label: 'Otros' }
+                    ].map(option => (
+                      <div key={option.value}>
+                        <RadioGroupItem
+                          value={option.value}
+                          id={`reason-${option.value}`}
+                          className="peer sr-only"
+                        />
+                        <Label
+                          htmlFor={`reason-${option.value}`}
+                          className="flex items-center justify-center p-4 text-gray-500 border rounded-lg cursor-pointer hover:bg-gray-50 peer-checked:border-primary peer-checked:text-primary peer-checked:bg-primary/5"
+                        >
+                          {option.label}
+                        </Label>
+                      </div>
+                    ))}
                   </RadioGroup>
+
+                  {formData.visitReason === 'other' && (
+                    <div className="mt-4">
+                      <Label htmlFor="other-reason" className="text-sm font-medium">
+                        Especifique el motivo:
+                      </Label>
+                      <Textarea 
+                        id="other-reason"
+                        value={formData.otherReason}
+                        onChange={(e) => handleChange('otherReason', e.target.value)}
+                        placeholder="Por favor, describa el motivo de su visita"
+                        className="mt-2"
+                      />
+                    </div>
+                  )}
                 </div>
-
-                {/* Especificación de otros */}
-                {formData.visitReason === 'other' && (
-                  <div className="space-y-2">
-                    <Label>Especifique:</Label>
-                    <Textarea 
-                      value={formData.otherReason}
-                      onChange={(e) => handleChange('otherReason', e.target.value)}
-                      placeholder="Arreglo de aire acondicionado"
-                      className="min-h-[100px]"
-                    />
-                  </div>
-                )}
               </div>
+            </div>
 
-              {/* Submit Button */}
-              <div className="flex justify-end pt-4">
-                <Button type="submit" disabled={loading}>
-                  {loading ? 'Enviando...' : 'Enviar Evaluación'}
-                </Button>
-              </div>
+            {/* Submit Button */}
+            <div className="flex justify-end pt-6">
+              <Button 
+                type="submit" 
+                disabled={loading}
+                className="w-full md:w-auto"
+                size="lg"
+              >
+                {loading ? 'Enviando...' : 'Enviar Evaluación'}
+              </Button>
             </div>
           </form>
         </CardContent>
