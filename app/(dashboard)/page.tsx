@@ -27,15 +27,15 @@ export default function DashboardPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    impressionRating: '9',
-    punctualityRating: '9',
-    staffRating: '10',
-    qualityRating: '9',
-    valueRating: '8',
-    npsRating: '9',
-    offeredInspection: 'no',
-    postServiceContact: 'yes',
-    visitReason: 'other',
+    impressionRating: '',
+    punctualityRating: '',
+    staffRating: '',
+    qualityRating: '',
+    valueRating: '',
+    npsRating: '',
+    offeredInspection: '',
+    postServiceContact: '',
+    visitReason: '',
     otherReason: '',
   });
 
@@ -69,6 +69,7 @@ export default function DashboardPage() {
   };
 
   const handleChange = (field: string, value: string) => {
+    console.log('Changing field:', field, 'to value:', value); // Para debug
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -85,33 +86,40 @@ export default function DashboardPage() {
           <CardDescription>{description}</CardDescription>
         )}
       </div>
-      <div className="space-y-4">
+      <div>
         <RadioGroup 
           value={value} 
           onValueChange={(val) => handleChange(field, val)}
-          className="flex flex-wrap gap-3"
+          className="flex gap-1 w-full justify-between"
         >
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-            <div
-              key={num}
-              className={`relative flex-1 min-w-[80px] cursor-pointer`}
-            >
-              <RadioGroupItem
-                value={num.toString()}
-                id={`${field}-${num}`}
-                className="peer sr-only"
-              />
-              <Label
-                htmlFor={`${field}-${num}`}
-                className="flex flex-col items-center justify-center p-3 text-gray-500 border rounded-lg cursor-pointer hover:bg-gray-50 peer-checked:border-primary peer-checked:text-primary peer-checked:bg-primary/5 transition-all"
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => {
+            const isSelected = value === num.toString();
+            return (
+              <div
+                key={num}
+                className="flex-none w-[65px]"
               >
-                <span className="text-2xl font-bold">{num}</span>
-                <span className="text-xs text-center mt-1">{ratingLabels[num as keyof typeof ratingLabels]}</span>
-              </Label>
-            </div>
-          ))}
+                <RadioGroupItem
+                  value={num.toString()}
+                  id={`${field}-${num}`}
+                  className="peer sr-only"
+                />
+                <Label
+                  htmlFor={`${field}-${num}`}
+                  className={`flex flex-col items-center justify-center p-1 border rounded-lg cursor-pointer 
+                  transition-all duration-200 ease-in-out
+                  ${isSelected 
+                    ? 'bg-gray-900 text-white border-gray-900 shadow-md' 
+                    : 'text-gray-500 hover:bg-primary/10 hover:border-primary hover:text-primary hover:shadow-md'
+                  }`}
+                >
+                  <span className="text-base font-bold">{num}</span>
+                  <span className="text-[9px] text-center leading-tight">{ratingLabels[num as keyof typeof ratingLabels]}</span>
+                </Label>
+              </div>
+            );
+          })}
         </RadioGroup>
-        <Progress value={parseInt(value) * 10} className="h-2" />
       </div>
     </div>
   );
@@ -186,26 +194,34 @@ export default function DashboardPage() {
                   <RadioGroup 
                     value={formData.offeredInspection}
                     onValueChange={(value) => handleChange('offeredInspection', value)}
-                    className="flex gap-4"
+                    className="flex gap-2 justify-center"
                   >
                     {[
                       { value: 'yes', label: 'Sí' },
                       { value: 'no', label: 'No' }
-                    ].map(option => (
-                      <div key={option.value} className="flex-1">
-                        <RadioGroupItem
-                          value={option.value}
-                          id={`inspection-${option.value}`}
-                          className="peer sr-only"
-                        />
-                        <Label
-                          htmlFor={`inspection-${option.value}`}
-                          className="flex items-center justify-center p-4 text-gray-500 border rounded-lg cursor-pointer hover:bg-gray-50 peer-checked:border-primary peer-checked:text-primary peer-checked:bg-primary/5"
-                        >
-                          {option.label}
-                        </Label>
-                      </div>
-                    ))}
+                    ].map(option => {
+                      const isSelected = formData.offeredInspection === option.value;
+                      return (
+                        <div key={option.value} className="w-[80px]">
+                          <RadioGroupItem
+                            value={option.value}
+                            id={`inspection-${option.value}`}
+                            className="peer sr-only"
+                          />
+                          <Label
+                            htmlFor={`inspection-${option.value}`}
+                            className={`flex items-center justify-center p-2 border rounded-lg cursor-pointer 
+                            transition-all duration-200 ease-in-out
+                            ${isSelected 
+                              ? 'bg-gray-900 text-white border-gray-900 shadow-md' 
+                              : 'text-gray-500 hover:bg-primary/10 hover:border-primary hover:text-primary hover:shadow-md'
+                            }`}
+                          >
+                            {option.label}
+                          </Label>
+                        </div>
+                      );
+                    })}
                   </RadioGroup>
                 </div>
 
@@ -217,27 +233,35 @@ export default function DashboardPage() {
                   <RadioGroup 
                     value={formData.postServiceContact}
                     onValueChange={(value) => handleChange('postServiceContact', value)}
-                    className="flex gap-4"
+                    className="flex gap-2 justify-center"
                   >
                     {[
                       { value: 'yes', label: 'Sí' },
                       { value: 'no', label: 'No' },
                       { value: 'didnt-want', label: 'No lo deseaba' }
-                    ].map(option => (
-                      <div key={option.value} className="flex-1">
-                        <RadioGroupItem
-                          value={option.value}
-                          id={`contact-${option.value}`}
-                          className="peer sr-only"
-                        />
-                        <Label
-                          htmlFor={`contact-${option.value}`}
-                          className="flex items-center justify-center p-4 text-gray-500 border rounded-lg cursor-pointer hover:bg-gray-50 peer-checked:border-primary peer-checked:text-primary peer-checked:bg-primary/5"
-                        >
-                          {option.label}
-                        </Label>
-                      </div>
-                    ))}
+                    ].map(option => {
+                      const isSelected = formData.postServiceContact === option.value;
+                      return (
+                        <div key={option.value} className="w-[100px]">
+                          <RadioGroupItem
+                            value={option.value}
+                            id={`contact-${option.value}`}
+                            className="peer sr-only"
+                          />
+                          <Label
+                            htmlFor={`contact-${option.value}`}
+                            className={`flex items-center justify-center p-2 text-sm border rounded-lg cursor-pointer 
+                            transition-all duration-200 ease-in-out
+                            ${isSelected 
+                              ? 'bg-gray-900 text-white border-gray-900 shadow-md' 
+                              : 'text-gray-500 hover:bg-primary/10 hover:border-primary hover:text-primary hover:shadow-md'
+                            }`}
+                          >
+                            {option.label}
+                          </Label>
+                        </div>
+                      );
+                    })}
                   </RadioGroup>
                 </div>
 
@@ -249,7 +273,7 @@ export default function DashboardPage() {
                   <RadioGroup 
                     value={formData.visitReason}
                     onValueChange={(value) => handleChange('visitReason', value)}
-                    className="grid gap-4 md:grid-cols-2"
+                    className="flex gap-2 justify-between"
                   >
                     {[
                       { value: 'routine', label: 'Servicio de rutina pagado o prepagado' },
@@ -257,21 +281,29 @@ export default function DashboardPage() {
                       { value: 'warranty', label: 'Reparación de garantía o mal funcionamiento' },
                       { value: 'recall', label: 'Recall' },
                       { value: 'other', label: 'Otros' }
-                    ].map(option => (
-                      <div key={option.value}>
-                        <RadioGroupItem
-                          value={option.value}
-                          id={`reason-${option.value}`}
-                          className="peer sr-only"
-                        />
-                        <Label
-                          htmlFor={`reason-${option.value}`}
-                          className="flex items-center justify-center p-4 text-gray-500 border rounded-lg cursor-pointer hover:bg-gray-50 peer-checked:border-primary peer-checked:text-primary peer-checked:bg-primary/5"
-                        >
-                          {option.label}
-                        </Label>
-                      </div>
-                    ))}
+                    ].map(option => {
+                      const isSelected = formData.visitReason === option.value;
+                      return (
+                        <div key={option.value} className="flex-1 min-w-0">
+                          <RadioGroupItem
+                            value={option.value}
+                            id={`reason-${option.value}`}
+                            className="peer sr-only"
+                          />
+                          <Label
+                            htmlFor={`reason-${option.value}`}
+                            className={`flex items-center justify-center p-2 text-xs border rounded-lg cursor-pointer 
+                            transition-all duration-200 ease-in-out
+                            ${isSelected 
+                              ? 'bg-gray-900 text-white border-gray-900 shadow-md' 
+                              : 'text-gray-500 hover:bg-primary/10 hover:border-primary hover:text-primary hover:shadow-md'
+                            }`}
+                          >
+                            {option.label}
+                          </Label>
+                        </div>
+                      );
+                    })}
                   </RadioGroup>
 
                   {formData.visitReason === 'other' && (
