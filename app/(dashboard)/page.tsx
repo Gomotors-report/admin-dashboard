@@ -276,9 +276,9 @@ export default function DashboardPage() {
                     className="flex gap-2 justify-between"
                   >
                     {[
-                      { value: 'routine', label: 'Servicio de rutina pagado o prepagado' },
-                      { value: 'free', label: 'Servicio gratuito' },
-                      { value: 'warranty', label: 'Reparación de garantía o mal funcionamiento' },
+                      { value: 'Servicio de rutina pagado o prepagado', label: 'Servicio de rutina pagado o prepagado' },
+                      { value: 'Servicio gratuito', label: 'Servicio gratuito' },
+                      { value: 'Reparación de garantía o mal funcionamiento', label: 'Reparación de garantía o mal funcionamiento' },
                       { value: 'recall', label: 'Recall' },
                       { value: 'other', label: 'Otros' }
                     ].map(option => {
